@@ -8,15 +8,16 @@ Azure OpenAI Service と `Microsoft.Agents.AI` を使い、さまざまなエー
 - .NET 10 SDK
 - Azure OpenAI Service のエンドポイントとデプロイ名
 - Azure CLI (`az login` 済み) ※ `AzureCliCredential` を使用
+- `az login` しているユーザーに Azure OpenAI リソースへの **Cognitive Services OpenAI User** ロールが必要です
 
 ## 設定
 
 各プロジェクトは [.NET User Secrets](https://learn.microsoft.com/ja-jp/aspnet/core/security/app-secrets) で接続情報を管理しています。  
-各プロジェクトのディレクトリで以下を実行してください。
+全プロジェクトが同じ `UserSecretsId` (`agent-framework-v1-lab`) を共有しているため、以下のコマンドは **1回だけ** 実行すれば OK です。
 
 ```bash
-dotnet user-secrets set "Endpoint" "https://<your-resource>.openai.azure.com/"
-dotnet user-secrets set "DeploymentName" "<your-deployment-name>"
+dotnet user-secrets set --id agent-framework-v1-lab "Endpoint" "https://<your-resource>.openai.azure.com/"
+dotnet user-secrets set --id agent-framework-v1-lab "DeploymentName" "<your-deployment-name>"
 ```
 
 ## プロジェクト一覧
