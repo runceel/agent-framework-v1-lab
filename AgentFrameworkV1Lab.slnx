@@ -1,0 +1,9 @@
+<Solution>
+  <Project Path="AgentRunMiddleware/AgentRunMiddleware.csproj" />
+  <Project Path="AgentWithTools/AgentWithTools.csproj" />
+  <Project Path="ContextProviderAgent/ContextProviderAgent.csproj" />
+  <Project Path="FunctionCallMiddleware/FunctionCallMiddleware.csproj" />
+  <Project Path="HelloAgent/HelloAgent.csproj" />
+  <Project Path="MemoryAgent/MemoryAgent.csproj" />
+  <Project Path="MultiTurnAgent/MultiTurnAgent.csproj" />
+</Solution>
