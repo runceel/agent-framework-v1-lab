@@ -6,4 +6,11 @@
   <Project Path="HelloAgent/HelloAgent.csproj" />
   <Project Path="MemoryAgent/MemoryAgent.csproj" />
   <Project Path="MultiTurnAgent/MultiTurnAgent.csproj" />
+  <Project Path="HelloWorkflow/HelloWorkflow.csproj" />
+  <Project Path="StreamingWorkflow/StreamingWorkflow.csproj" />
+  <Project Path="AgentInWorkflow/AgentInWorkflow.csproj" />
+  <Project Path="SequentialAgents/SequentialAgents.csproj" />
+  <Project Path="ConcurrentAgents/ConcurrentAgents.csproj" />
+  <Project Path="HandoffAgents/HandoffAgents.csproj" />
+  <Project Path="GroupChatAgents/GroupChatAgents.csproj" />
 </Solution>

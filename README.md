@@ -8,7 +8,7 @@ Azure OpenAI Service と `Microsoft.Agents.AI` を使い、さまざまなエー
 - .NET 10 SDK
 - Azure OpenAI Service のエンドポイントとデプロイ名
 - Azure CLI (`az login` 済み) ※ `AzureCliCredential` を使用
-- `az login` しているユーザーに Azure OpenAI リソースへの **Cognitive Services OpenAI User** ロールが必要です
+- `az login` しているユーザーに Microsoft Foundry のリソースへの **Azure AI User** ロールが必要です
 
 ## 設定
 
