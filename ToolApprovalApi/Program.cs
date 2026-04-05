@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.ComponentModel;
+using System.Text.Json;
 using Azure.AI.OpenAI;
 using Azure.Identity;
 using Microsoft.Agents.AI;
@@ -29,21 +30,32 @@ AIAgent agent = new AzureOpenAIClient(
         instructions: "あなたはネコ型アシスタントです。語尾に必ず「にゃん」を付けてください。",
         tools: [new ApprovalRequiredAIFunction(AIFunctionFactory.Create(GetWeather, name: "GetWeather"))]);
 
-// セッションと承認リクエストをインメモリで管理
-ConcurrentDictionary<string, AgentSession> sessions = new();
-ConcurrentDictionary<string, List<ToolApprovalRequestContent>> pendingApprovals = new();
+// セッションと承認リクエストをシリアライズして保存（実際は CosmosDB 等に置き換え可能）
+ConcurrentDictionary<string, string> sessionStore = new();
+ConcurrentDictionary<string, string> approvalStore = new();
 
 // チャットエンドポイント
 app.MapPost("/chat", async (ChatRequest request) =>
 {
     var sessionId = request.SessionId ?? Guid.NewGuid().ToString("N");
-    if (!sessions.TryGetValue(sessionId, out var session))
+
+    // セッションをデシリアライズして復元、なければ新規作成
+    AgentSession session;
+    if (sessionStore.TryGetValue(sessionId, out var sessionJson))
+    {
+        using var doc = JsonDocument.Parse(sessionJson);
+        session = await agent.DeserializeSessionAsync(doc.RootElement);
+    }
+    else
     {
         session = await agent.CreateSessionAsync();
-        sessions[sessionId] = session;
     }
 
     AgentResponse response = await agent.RunAsync(request.Message, session);
+
+    // セッションをシリアライズして保存
+    sessionStore[sessionId] = JsonSerializer.Serialize(
+        await agent.SerializeSessionAsync(session));
 
     var approvalRequests = response.Messages
         .SelectMany(m => m.Contents)
@@ -52,7 +64,9 @@ app.MapPost("/chat", async (ChatRequest request) =>
 
     if (approvalRequests.Count > 0)
     {
-        pendingApprovals[sessionId] = approvalRequests;
+        // 承認リクエストをシリアライズして保存
+        approvalStore[sessionId] = JsonSerializer.Serialize(
+            approvalRequests, AIJsonUtilities.DefaultOptions);
         return Results.Ok(new ChatResponse(
             SessionId: sessionId,
             Message: null,
@@ -75,11 +89,20 @@ app.MapPost("/chat", async (ChatRequest request) =>
 // 承認エンドポイント
 app.MapPost("/approve", async (ApproveRequest request) =>
 {
-    if (!sessions.TryGetValue(request.SessionId, out var session))
+    if (!sessionStore.TryGetValue(request.SessionId, out var sessionJson))
         return Results.NotFound("セッションが見つかりません。");
 
-    if (!pendingApprovals.TryRemove(request.SessionId, out var pending))
+    if (!approvalStore.TryRemove(request.SessionId, out var approvalJson))
         return Results.NotFound("承認待ちのリクエストが見つかりません。");
+
+    // デシリアライズして復元
+    AgentSession session;
+    {
+        using var doc = JsonDocument.Parse(sessionJson);
+        session = await agent.DeserializeSessionAsync(doc.RootElement);
+    }
+    var pending = JsonSerializer.Deserialize<List<ToolApprovalRequestContent>>(
+        approvalJson, AIJsonUtilities.DefaultOptions)!;
 
     // 承認結果から ChatMessage を組み立てる
     var userResponses = pending.Select(approvalRequest =>
@@ -91,6 +114,10 @@ app.MapPost("/approve", async (ApproveRequest request) =>
 
     AgentResponse response = await agent.RunAsync(userResponses, session);
 
+    // セッションをシリアライズして保存
+    sessionStore[request.SessionId] = JsonSerializer.Serialize(
+        await agent.SerializeSessionAsync(session));
+
     var newApprovals = response.Messages
         .SelectMany(m => m.Contents)
         .OfType<ToolApprovalRequestContent>()
@@ -98,7 +125,8 @@ app.MapPost("/approve", async (ApproveRequest request) =>
 
     if (newApprovals.Count > 0)
     {
-        pendingApprovals[request.SessionId] = newApprovals;
+        approvalStore[request.SessionId] = JsonSerializer.Serialize(
+            newApprovals, AIJsonUtilities.DefaultOptions);
         return Results.Ok(new ChatResponse(
             SessionId: request.SessionId,
             Message: null,
