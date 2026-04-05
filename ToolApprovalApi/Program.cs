@@ -30,7 +30,7 @@ AIAgent agent = new AzureOpenAIClient(
         instructions: "あなたはネコ型アシスタントです。語尾に必ず「にゃん」を付けてください。",
         tools: [new ApprovalRequiredAIFunction(AIFunctionFactory.Create(GetWeather, name: "GetWeather"))]);
 
-// セッションと承認リクエストをシリアライズして保存（実際は CosmosDB 等に置き換え可能）
+// 簡易的にメモリ上でセッションと承認リクエストを保持
 ConcurrentDictionary<string, string> sessionStore = new();
 ConcurrentDictionary<string, string> approvalStore = new();
 
