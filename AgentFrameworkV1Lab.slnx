@@ -4,6 +4,7 @@
   <Project Path="ContextProviderAgent/ContextProviderAgent.csproj" />
   <Project Path="FunctionCallMiddleware/FunctionCallMiddleware.csproj" />
   <Project Path="HelloAgent/HelloAgent.csproj" />
+  <Project Path="LlmGroupChatAgents/LlmGroupChatAgents.csproj" />
   <Project Path="MemoryAgent/MemoryAgent.csproj" />
   <Project Path="MultiTurnAgent/MultiTurnAgent.csproj" />
   <Project Path="HelloWorkflow/HelloWorkflow.csproj" />

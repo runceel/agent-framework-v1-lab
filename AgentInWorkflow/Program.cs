@@ -22,7 +22,7 @@ var chatClient = new AzureOpenAIClient(
 AIAgent englishAgent = new ChatClientAgent(chatClient,
     "あなたは翻訳アシスタントです。入力されたテキストを英語に翻訳してください。翻訳結果のみを出力してください。");
 AIAgent frenchAgent = new ChatClientAgent(chatClient,
-    "You are a translation assistant. Translate the input text to French. Output only the translation.");
+    "あなたは翻訳アシスタントです。入力されたテキストをフランス語に翻訳してください。翻訳結果のみを出力してください。");
 
 // ワークフローを構築: 英語に翻訳 → フランス語に翻訳
 var workflow = new WorkflowBuilder(englishAgent)
