@@ -41,15 +41,16 @@ var approvalRequests = response.Messages
 while (approvalRequests.Count > 0)
 {
     // 承認リクエストごとにユーザーに確認
-    var userResponses = approvalRequests.ConvertAll(request =>
+    var userResponses = new List<ChatMessage>();
+    foreach (var request in approvalRequests)
     {
         var functionCall = (FunctionCallContent)request.ToolCall;
         Console.WriteLine($"[承認リクエスト] ツール: {functionCall.Name}, 引数: {string.Join(", ", functionCall.Arguments?.Select(a => $"{a.Key}={a.Value}") ?? [])}");
         Console.Write("承認しますか？ (Y/N): ");
         var approved = Console.ReadLine()?.Equals("Y", StringComparison.OrdinalIgnoreCase) ?? false;
         Console.WriteLine($"→ {(approved ? "承認" : "拒否")}しました。\n");
-        return new ChatMessage(ChatRole.User, [request.CreateResponse(approved)]);
-    });
+        userResponses.Add(new ChatMessage(ChatRole.User, [request.CreateResponse(approved)]));
+    }
 
     // 承認結果をエージェントに返す
     response = await agent.RunAsync(userResponses, session);
