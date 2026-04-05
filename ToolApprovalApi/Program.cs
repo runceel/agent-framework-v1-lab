@@ -6,7 +6,7 @@ using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using OpenAI.Chat;
-using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
+using ChatMessage = Microsoft.Extensions.AI.ChatMessage; // OpenAI.Chat.ChatMessage との名前衝突を回避
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddUserSecrets<Program>();
