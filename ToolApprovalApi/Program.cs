@@ -37,7 +37,11 @@ ConcurrentDictionary<string, List<ToolApprovalRequestContent>> pendingApprovals 
 app.MapPost("/chat", async (ChatRequest request) =>
 {
     var sessionId = request.SessionId ?? Guid.NewGuid().ToString("N");
-    var session = sessions.GetOrAdd(sessionId, _ => agent.CreateSessionAsync().GetAwaiter().GetResult());
+    if (!sessions.TryGetValue(sessionId, out var session))
+    {
+        session = await agent.CreateSessionAsync();
+        sessions[sessionId] = session;
+    }
 
     AgentResponse response = await agent.RunAsync(request.Message, session);
 
