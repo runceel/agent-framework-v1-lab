@@ -43,8 +43,8 @@ app.MapPost("/chat", async (ChatRequest request) =>
     AgentSession session;
     if (sessionStore.TryGetValue(sessionId, out var sessionJson))
     {
-        using var doc = JsonDocument.Parse(sessionJson);
-        session = await agent.DeserializeSessionAsync(doc.RootElement);
+        session = await agent.DeserializeSessionAsync(
+            JsonSerializer.Deserialize<JsonElement>(sessionJson));
     }
     else
     {
@@ -96,11 +96,8 @@ app.MapPost("/approve", async (ApproveRequest request) =>
         return Results.NotFound("承認待ちのリクエストが見つかりません。");
 
     // デシリアライズして復元
-    AgentSession session;
-    {
-        using var doc = JsonDocument.Parse(sessionJson);
-        session = await agent.DeserializeSessionAsync(doc.RootElement);
-    }
+    var session = await agent.DeserializeSessionAsync(
+        JsonSerializer.Deserialize<JsonElement>(sessionJson));
     var pending = JsonSerializer.Deserialize<List<ToolApprovalRequestContent>>(
         approvalJson, AIJsonUtilities.DefaultOptions)!;
 
